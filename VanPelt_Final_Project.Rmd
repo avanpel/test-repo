@@ -2,7 +2,7 @@
 title: "BMIN503/EPID600 Project Template"
 author: "Amelia Van Pelt"
 output: 
-  html_document:
+  html_document: 
     toc: false 
     depth: 3 
     theme: paper 
