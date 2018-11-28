@@ -1,0 +1,245 @@
+---
+title: "BMIN503/EPID600 Project Template"
+author: "Amelia Van Pelt"
+output: 
+  html_document:
+    toc: false 
+    depth: 3 
+    theme: paper 
+    highlight: tango
+---
+```{r set-options, echo=FALSE, cache=FALSE}
+options(width = 400)
+```  
+***
+
+### Overview
+Include a link to your final project GitHub repository.
+
+This research aims to determine reasons for poor vaccine uptake in Uganda. To accomplish this goal, this research proposes to visualize the geographic distribution of vaccine receipt across the regions and to assess the relationship between various demographic factors and rates of vaccination coverage in Uganda. This research will utilize the 2016 Demographic and Health Survey dataset, specifically the women's recoded dataset. Scholars in three disciplines provided guidance on the project: Irma Elo, PhD, MPA, Professor in the Department of Sociology, Luca Pesando, PhD, MSc, Post-doctoral Fellow in the Population Studies Center, and Vicky Tam, MA, resident expert in Geographic Information Systems at the University of Pennsylvania and the Children's Hostpial of Philadelphia. Pesando works extensively with the DHS datasets, so he provided the data, data dictionary, and guidance on the quirks of DHS data. For example, he explained the importance of the survey weights. Elo discussed suggestions on demographic variables to include in the analyses.
+
+### Introduction 
+
+According to the 2016 Demographic Health Survey (DHS), Uganda experiences low vaccine coverage. Approximately half of all children aged 12-23 months included in the survey received all of the basic vaccinations. Poor vaccine coverage causes significant consequences. A lack of immunological protection increases the susceptibility to disease. As a result, a greater potential for an outbreak of a vaccine-preventable disease (VPD) exists. The increase in the incidence of VPDs results in increased morbidity and mortality. Further, the effect of an outbreak of a VPD extends beyond the physical health of a population, for treatment of disease, compared to receipt of a vaccine, contributes more economic burden. 
+
+Many factors influence vaccine uptake. The final report of the DHS provides a table that illustrates the relationship between some common variables, such as mother’s education level and birth order, and the percentage of children who received various vaccines. However, vaccination uptake is a complex problem that extends beyond the simple analyses provided. For example, religion and access to healthcare influence vaccine uptake. Thus, to fully understand the complexity of vaccination coverage, research must propose an interdisciplinary approach. Experts in public health, sociology, population science, medicine, and many other disciplines can contribute perspectives to develop a more robust understanding of the issue. This research will draw on conversations with scholars in such disciplines to incorporate relevant variables for statistical analyses and data visualization. 
+
+
+### Methods
+In the first paragraph, describe the general methodological approach.
+
+One of the 2016 Demographic and Health Survey (DHS) datasets was used for the analyses. The DHS program is funded by the United States Agency for International Development (USAID) and facilitates "nationally-representative household surveys" in over 90 countries. Officials utilize the data for monitoring and evaluating population, health, and nutrition indicators. Many recoded versions of the data exist, such as household recode, children's recode, and women's recode. For this research, the 2016 Uganda women's recoded dataset was analyzed, for it contains observations on children's vaccination status and mother's demographic variables for the same respondents. The dataset contains 18,506 observations and 4,966 variables. The large size of the dataset continuously crashed the program, so the unrelated variables were dropped. In addition, the observations that corresponded to women with zero children were dropped as well, because the primary outcome of interest was child's vaccine receipt. The final dataset used for this project contained 13,740 observations. 
+
+
+Loading the Dataset
+```{r}
+library(readxl)
+womendataset <- read_excel("C:/Users/vanpel/Downloads/datasciencefinaldata.xls")
+View(womendataset)
+```
+
+Additional Data Cleaning
+```{r}
+head(womendataset)
+
+womendataset$'ever had vaccination'[womendataset$'ever had vaccination'=='no'] <- 0
+womendataset$'ever had vaccination'[womendataset$'ever had vaccination'=='yes'] <- 1
+womendataset$`ever had vaccination` <- as.numeric(womendataset$`ever had vaccination`)
+class(womendataset$`ever had vaccination`)
+
+womendataset$region[womendataset$region==0] <- "Kampala"
+womendataset$region[womendataset$region==1] <- "Central 1"
+womendataset$region[womendataset$region==2] <- "Central 2"
+womendataset$region[womendataset$region==3] <- "Busoga"
+womendataset$region[womendataset$region==4] <- "Bukedi"
+womendataset$region[womendataset$region==5] <- "Bugishu"
+womendataset$region[womendataset$region==6] <- "Teso"
+womendataset$region[womendataset$region==7] <- "Karamoja"
+womendataset$region[womendataset$region==8] <- "Lango"
+womendataset$region[womendataset$region==9] <- "Acholi"
+womendataset$region[womendataset$region==10] <- "West Nile"
+womendataset$region[womendataset$region==11] <- "Bunyoro"
+womendataset$region[womendataset$region==12] <- "Tooro"
+womendataset$region[womendataset$region==13] <- "Ankole"
+womendataset$region[womendataset$region==14] <- "Kigezi"
+
+womendataset$'type of place of residence'[womendataset$'type of place of residence'==1] <- "urban"
+womendataset$'type of place of residence'[womendataset$'type of place of residence'==2] <- "rural"
+
+```
+
+To determine the distribution of responses for the demographic variables, simple descriptive statistics were performed. The frequency for each item for the categorical variables was calculated. 
+
+Descriptive Statistics
+```{r}
+table(womendataset$region)
+table(womendataset$`type of place of residence`)
+table(womendataset$`highest educational level`)
+table(womendataset$religion)
+table(womendataset$literacy)
+table(womendataset$`wealth index combined`)
+table(womendataset$`birth order number`)
+table(womendataset$`total children ever born`)
+table(womendataset$`covered by health insurance`)
+table(womendataset$`ever had vaccination`)
+```
+
+To better visualize the distribution of respondents for the demomographic varaibles, bar charts were created. 
+
+Visualization of the Distribution of Demographic Variables
+```{r}
+library(dplyr)
+library(ggplot2)
+
+ggplot(data=womendataset, aes(x=womendataset$region)) +
+  geom_bar (fill="blue") +
+  ggtitle("Distribution of Respondents by Region")+
+  labs(x="DHS Region", y="Number of Respondents", title="Distribution of Respondents by Region")
+
+ggplot(data=womendataset, aes(x=womendataset$'type of place of residence')) +
+  geom_bar (fill="purple") +
+  ggtitle("Distribution of Respondents by Environment")+
+  labs(x="Environment", y="Number of Respondents", title="Distribution of Respondents by Environment")
+
+ggplot(data=womendataset, aes(x=womendataset$'highest educational level')) +
+  geom_bar (fill="green") +
+  ggtitle("Distribution of Respondents by Education Level")+
+  labs(x="Highest Educational Level", y="Number of Respondents", title="Distribution of Respondents by Education Level")
+
+ggplot(data=womendataset, aes(x=womendataset$religion)) +
+  geom_bar (fill="orange") +
+  ggtitle("Distribution of Respondents by Religion")+
+  labs(x="Religion", y="Number of Respondents", title="Distribution of Respondents by Religion")
+
+ggplot(data=womendataset, aes(x=womendataset$literacy)) +
+  geom_bar (fill="red") +
+  ggtitle("Distribution of Respondents by Literacy Level")+
+  labs(x="Literacy Level", y="Number of Respondents", title="Distribution of Respondents by Literacy Level")
+
+ggplot(data=womendataset, aes(x=womendataset$'wealth index combined')) +
+  geom_bar (fill="yellow") +
+  ggtitle("Distribution of Respondents by Wealth Index")+
+  labs(x="Wealth Index", y="Number of Respondents", title="Distribution of Respondents by Wealth Index")
+
+ggplot(data=womendataset, aes(x=womendataset$'birth order number')) +
+  geom_bar (fill="pink") +
+  ggtitle("Distribution of Respondents by Birth Order")+
+  labs(x="Birth Order Number", y="Number of Respondents", title="Distribution of Respondents by Birth Order")
+
+ggplot(data=womendataset, aes(x=womendataset$'total children ever born')) +
+  geom_bar (fill="black") +
+  ggtitle("Distribution of Respondents by Total Number of Children")+
+  labs(x="Total Number of Children", y="Number of Respondents", title="Distribution of Respondents by Total Number of Children")
+
+ggplot(data=womendataset, aes(x=womendataset$'covered by health insurance')) +
+  geom_bar (fill="lightblue") +
+  ggtitle("Distribution of Respondents by Health Insurance Status")+
+  labs(x="Health Insurance Status", y="Number of Respondents", title="Distribution of Respondents by Health Insurance Status")
+```
+
+
+### Results
+Describe your results and include relevant tables, plots, and code/comments used to obtain them. End with a brief conclusion of your findings related to the question you set out to address. You can include references if you'd like, but this is not required.
+
+#This section is a work in progress.
+
+To test the association between the demographic variables and the receipt of a vaccine, bivariate logistic regression models were created. All of the included predictors are statistically-significant at the 0.05 threshold level. 
+
+Regression Models
+```{r}
+summary((glm(womendataset$`ever had vaccination`~womendataset$region, family=binomial())))
+summary((glm(womendataset$`ever had vaccination`~womendataset$`type of place of residence`, family=binomial())))
+summary((glm(womendataset$`ever had vaccination`~womendataset$`highest educational level`, family=binomial())))
+summary((glm(womendataset$`ever had vaccination`~womendataset$religion, family=binomial())))
+summary((glm(womendataset$`ever had vaccination`~womendataset$literacy, family=binomial())))
+summary((glm(womendataset$`ever had vaccination`~womendataset$`wealth index combined`, family=binomial())))
+summary((glm(womendataset$`ever had vaccination`~womendataset$`birth order number`, family=binomial())))
+summary((glm(womendataset$`ever had vaccination`~womendataset$`total children ever born`, family=binomial())))
+summary((glm(womendataset$`ever had vaccination`~womendataset$`covered by health insurance`, family=binomial())))
+
+```
+
+To visual the spatial distribution of the vaccination coverage, static and interactive maps were created. The vaccination coverage variable represent the number respondents whose child ever received a vaccine divided by the total number of respondents in that region. Percentages of vaccine receipt are plotted on the maps. 
+
+Geographical Visualization of the Vaccination Coverage
+```{r}
+library(readxl)
+vaccinerates <- read_excel("C:/Users/vanpel/Downloads/datasciencefinalspatial(1).xlsx")
+
+library(dplyr)
+library(sf)
+ugandashape <- st_read('C:/Users/vanpel/Desktop/shps/sdr_subnational_boundaries.shp')
+
+
+head(ugandashape)
+head(vaccinerates)
+
+visualization <- inner_join(ugandashape, vaccinerates, by = "REGNAME")
+head(visualization)
+
+
+library(RColorBrewer)
+library(viridis)
+
+myPalette <- colorRampPalette(brewer.pal(9, "BuPu"))
+
+my_theme <- function() {
+  theme_minimal() +
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.title = element_blank(),
+        panel.grid = element_line(color = "white"),
+        legend.key.size = unit(0.8, "cm"),
+        legend.text = element_text(size = 16),
+        legend.title = element_text(size = 16))
+}
+
+library(ggplot2)
+
+ggplot() +
+  geom_sf(data = visualization, aes(fill = percentvaccinatedtotal)) +
+  my_theme() +                   
+  ggtitle("Rates of Vaccination Coverage in Uganda") +
+  scale_fill_gradientn(name = "Ever Receiving a Vaccine (%)",
+                    colours = myPalette(100))
+  
+
+library(leaflet)
+
+pal_fun <- colorNumeric("BuPu", NULL)
+
+pu_message <- paste0(visualization$REGNAME, 
+                     "<br>Vaccination Rate: ",
+                     round(visualization$percentvaccinatedtotal, 1), "%")
+
+leaflet(visualization) %>%
+  addPolygons(fillColor = ~pal_fun(percentvaccinatedtotal),
+              popup = pu_message) %>%
+  addTiles()  
+
+leaflet(visualization) %>%
+  addPolygons(stroke = FALSE,
+              fillColor = ~pal_fun(percentvaccinatedtotal),
+              fillOpacity = 0.5, smoothFactor = 0.5,
+              popup = pu_message) %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  #addProviderTiles(providers$Stamen.Toner) %>%
+  #addProviderTiles(providers$Esri.NatGeoWorldMap)
+  addLegend("bottomright",
+            pal=pal_fun,
+            values=~percentvaccinatedtotal,
+            title = 'Vaccination Coverage(%)',
+            opacity = 1) %>%
+  addScaleBar()
+```
+
+Qualitative analyses can comment on the clustering of vaccine coverage. To assess the auto-spatial correlation quantitatively, spatial statistics were performed. 
+
+Spatial Statistics
+```{r}
+#To be determined after meeting with GIS consultant tomorrow.
+```
+
+
+### Conclusion
+The results highlight the areas for public health interventions aimed at increasing vaccination uptake. In the regions with the lowest coverage, efforts should be emphasized. 
